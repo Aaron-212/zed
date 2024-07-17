@@ -2,7 +2,6 @@ mod actions;
 pub(crate) mod autoscroll;
 pub(crate) mod scroll_amount;
 
-use crate::editor_settings::ScrollBeyondLastLine;
 use crate::{
     display_map::{DisplaySnapshot, ToDisplayPoint},
     hover_popover::hide_hover,
@@ -201,26 +200,18 @@ impl ScrollManager {
             )
         } else {
             let scroll_top = scroll_position.y;
-            let scroll_top = match EditorSettings::get_global(cx).scroll_beyond_last_line {
-                ScrollBeyondLastLine::OnePage => scroll_top,
-                ScrollBeyondLastLine::Off => {
-                    if let Some(height_in_lines) = self.visible_line_count {
-                        let max_row = map.max_point().row().0 as f32;
-                        scroll_top.min(max_row - height_in_lines + 1.).max(0.)
-                    } else {
-                        scroll_top
-                    }
-                }
-                ScrollBeyondLastLine::VerticalScrollMargin => {
-                    if let Some(height_in_lines) = self.visible_line_count {
-                        let max_row = map.max_point().row().0 as f32;
-                        scroll_top
-                            .min(max_row - height_in_lines + 1. + self.vertical_scroll_margin)
-                            .max(0.)
-                    } else {
-                        scroll_top
-                    }
-                }
+            let scroll_beyond_last_line = EditorSettings::get_global(cx).scroll_beyond_last_line;
+            let scroll_top = if let Some(height_in_lines) = self.visible_line_count {
+                let max_row = map.max_point().row().0 as f32;
+                let max_scroll_top = if scroll_beyond_last_line >= 0.0 {
+                    (max_row - height_in_lines + 1. + scroll_beyond_last_line).min(max_row)
+                } else {
+                    (max_row + 1. + scroll_beyond_last_line).max(max_row - height_in_lines)
+                };
+
+                scroll_top.min(max_scroll_top)
+            } else {
+                scroll_top
             };
 
             let scroll_top_buffer_point =

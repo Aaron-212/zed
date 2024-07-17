@@ -1,4 +1,3 @@
-use crate::editor_settings::ScrollBeyondLastLine;
 use crate::{
     blame_entry_tooltip::{blame_entry_relative_timestamp, BlameEntryTooltip},
     display_map::{
@@ -1120,10 +1119,10 @@ impl EditorElement {
         );
 
         let settings = EditorSettings::get_global(cx);
-        let scroll_beyond_last_line: f32 = match settings.scroll_beyond_last_line {
-            ScrollBeyondLastLine::OnePage => rows_per_page,
-            ScrollBeyondLastLine::Off => 1.0,
-            ScrollBeyondLastLine::VerticalScrollMargin => 1.0 + settings.vertical_scroll_margin,
+        let scroll_beyond_last_line: f32 = if settings.scroll_beyond_last_line >= 0.0 {
+            (1.0 + settings.scroll_beyond_last_line).min(rows_per_page)
+        } else {
+            (1.0 + rows_per_page + settings.scroll_beyond_last_line).max(0.0)
         };
         let total_rows =
             (snapshot.max_point().row().as_f32() + scroll_beyond_last_line).max(rows_per_page);
@@ -4696,13 +4695,13 @@ impl Element for EditorElement {
                         (max_row - height_in_lines + 1.).max(0.)
                     } else {
                         let settings = EditorSettings::get_global(cx);
-                        match settings.scroll_beyond_last_line {
-                            ScrollBeyondLastLine::OnePage => max_row,
-                            ScrollBeyondLastLine::Off => (max_row - height_in_lines + 1.).max(0.),
-                            ScrollBeyondLastLine::VerticalScrollMargin => {
-                                (max_row - height_in_lines + 1. + settings.vertical_scroll_margin)
-                                    .max(0.)
-                            }
+
+                        if settings.scroll_beyond_last_line >= 0.0 {
+                            (max_row - height_in_lines + 1. + settings.scroll_beyond_last_line)
+                                .min(max_row)
+                        } else {
+                            (max_row + 1. + settings.scroll_beyond_last_line)
+                                .max(max_row + height_in_lines)
                         }
                     };
 
