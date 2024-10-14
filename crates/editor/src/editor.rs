@@ -60,6 +60,7 @@ use convert_case::{Case, Casing};
 use debounced_delay::DebouncedDelay;
 use display_map::*;
 pub use display_map::{DisplayPoint, FoldPlaceholder};
+use editor_settings::DiagnosticsHighlightStyle;
 pub use editor_settings::{
     CurrentLineHighlight, EditorSettings, ScrollBeyondLastLine, SearchSettings, ShowScrollbar,
 };
@@ -405,7 +406,7 @@ pub struct EditorStyle {
     pub inlay_hints_style: HighlightStyle,
     pub suggestions_style: HighlightStyle,
     pub unnecessary_code_fade: f32,
-    pub show_squiggly_underlines: bool,
+    pub diagnostics_highlight_style: DiagnosticsHighlightStyle,
 }
 
 impl Default for EditorStyle {
@@ -423,7 +424,7 @@ impl Default for EditorStyle {
             inlay_hints_style: HighlightStyle::default(),
             suggestions_style: HighlightStyle::default(),
             unnecessary_code_fade: Default::default(),
-            show_squiggly_underlines: Default::default(),
+            diagnostics_highlight_style: Default::default(),
         }
     }
 }
@@ -13721,7 +13722,8 @@ impl Render for Editor {
                     ..HighlightStyle::default()
                 },
                 unnecessary_code_fade: ThemeSettings::get_global(cx).unnecessary_code_fade,
-                show_squiggly_underlines: EditorSettings::get_global(cx).show_squiggly_underlines,
+                diagnostics_highlight_style: EditorSettings::get_global(cx)
+                    .diagnostics_highlight_style,
             },
         )
     }

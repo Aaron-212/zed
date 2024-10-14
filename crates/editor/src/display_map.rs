@@ -25,7 +25,8 @@ mod tab_map;
 mod wrap_map;
 
 use crate::{
-    hover_links::InlayHighlight, movement::TextLayoutDetails, EditorStyle, InlayId, RowExt,
+    hover_links::InlayHighlight, movement::TextLayoutDetails, DiagnosticsHighlightStyle,
+    EditorStyle, InlayId, RowExt,
 };
 pub use block_map::{
     Block, BlockBufferRows, BlockChunks as DisplayChunks, BlockContext, BlockDisposition, BlockId,
@@ -695,15 +696,29 @@ impl DisplaySnapshot {
 
             if let Some(severity) = chunk.diagnostic_severity {
                 // Omit underlines for HINT/INFO diagnostics on 'unnecessary' code.
-                if editor_style.show_squiggly_underlines
-                    && (severity <= DiagnosticSeverity::WARNING || !chunk.is_unnecessary)
-                {
+                if severity <= DiagnosticSeverity::WARNING || !chunk.is_unnecessary {
                     let diagnostic_color = super::diagnostic_style(severity, &editor_style.status);
-                    diagnostic_highlight.underline = Some(UnderlineStyle {
-                        color: Some(diagnostic_color),
-                        thickness: 1.0.into(),
-                        wavy: true,
-                    });
+                    match editor_style.diagnostics_highlight_style {
+                        DiagnosticsHighlightStyle::SquigglyUnderline => {
+                            diagnostic_highlight.underline = Some(UnderlineStyle {
+                                color: Some(diagnostic_color),
+                                thickness: 1.0.into(),
+                                wavy: true,
+                            });
+                        }
+                        DiagnosticsHighlightStyle::StraightUnderline => {
+                            diagnostic_highlight.underline = Some(UnderlineStyle {
+                                color: Some(diagnostic_color),
+                                thickness: 1.0.into(),
+                                wavy: false,
+                            });
+                        }
+                        DiagnosticsHighlightStyle::BackgroundHighlight => {
+                            diagnostic_highlight.background_color =
+                                Some(diagnostic_color.opacity(0.2));
+                        }
+                        DiagnosticsHighlightStyle::None => {}
+                    }
                 }
             }
 

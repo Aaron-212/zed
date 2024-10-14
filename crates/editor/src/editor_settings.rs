@@ -34,7 +34,7 @@ pub struct EditorSettings {
     pub auto_signature_help: bool,
     pub show_signature_help_after_edits: bool,
     pub jupyter: Jupyter,
-    pub show_squiggly_underlines: bool,
+    pub diagnostics_highlight_style: DiagnosticsHighlightStyle,
 }
 
 #[derive(Copy, Clone, Debug, Serialize, Deserialize, PartialEq, Eq, JsonSchema)]
@@ -173,6 +173,26 @@ pub struct SearchSettings {
     pub regex: bool,
 }
 
+/// The style of the diagnostics highlight.
+///
+/// Default: SquigglyUnderline
+#[derive(Default, Copy, Clone, Debug, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum DiagnosticsHighlightStyle {
+    /// Hide all diagnostics highlights.
+    None,
+
+    /// A squiggly underline will be shown below the text for diagnostics.
+    #[default]
+    SquigglyUnderline,
+
+    /// A straight underline will be shown below the text for diagnostics.
+    StraightUnderline,
+
+    /// A colored background will be shown behind the text for diagnostics.
+    BackgroundHighlight,
+}
+
 #[derive(Clone, Default, Serialize, Deserialize, JsonSchema)]
 pub struct EditorSettingsContent {
     /// Whether the cursor blinks in the editor.
@@ -286,8 +306,10 @@ pub struct EditorSettingsContent {
     /// Jupyter REPL settings.
     pub jupyter: Option<JupyterContent>,
 
-    /// Whether to show squiggle underlines for diagnostics in the editor.
-    pub show_squiggly_underlines: Option<bool>,
+    /// The style of the diagnostics highlight.
+    ///
+    /// Default: SquigglyUnderline
+    pub diagnostics_highlight_style: Option<DiagnosticsHighlightStyle>,
 }
 
 // Toolbar related settings
