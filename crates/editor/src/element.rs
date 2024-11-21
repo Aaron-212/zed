@@ -28,14 +28,13 @@ use client::ParticipantIndex;
 use collections::{BTreeMap, HashMap, HashSet};
 use git::{blame::BlameEntry, diff::DiffHunkStatus, Oid};
 use gpui::{
-    anchored, deferred, div, fill, outline, point, px, quad, relative, size, svg,
-    transparent_black, Action, AnchorCorner, AnyElement, AvailableSpace, Bounds, ClipboardItem,
-    ContentMask, Corners, CursorStyle, DispatchPhase, Edges, Element, ElementInputHandler, Entity,
-    FontId, GlobalElementId, Hitbox, Hsla, InteractiveElement, IntoElement, Length,
-    ModifiersChangedEvent, MouseButton, MouseDownEvent, MouseMoveEvent, MouseUpEvent, PaintQuad,
-    ParentElement, Pixels, ScrollDelta, ScrollWheelEvent, ShapedLine, SharedString, Size,
-    StatefulInteractiveElement, Style, Styled, TextRun, TextStyleRefinement, View, ViewContext,
-    WeakView, WindowContext,
+    anchored, deferred, div, fill, point, px, quad, relative, size, svg, transparent_black, Action,
+    AnchorCorner, AnyElement, AvailableSpace, Bounds, ClipboardItem, ContentMask, Corners,
+    CursorStyle, DispatchPhase, Edges, Element, ElementInputHandler, Entity, FontId,
+    GlobalElementId, Hitbox, Hsla, InteractiveElement, IntoElement, Length, ModifiersChangedEvent,
+    MouseButton, MouseDownEvent, MouseMoveEvent, MouseUpEvent, PaintQuad, ParentElement, Pixels,
+    ScrollDelta, ScrollWheelEvent, ShapedLine, SharedString, Size, StatefulInteractiveElement,
+    Style, Styled, TextRun, TextStyleRefinement, View, ViewContext, WeakView, WindowContext,
 };
 use gpui::{ClickEvent, Subscription};
 use itertools::Itertools;
@@ -6151,10 +6150,11 @@ impl CursorLayout {
         let bounds = self.bounds(origin);
 
         //Draw background or border quad
-        let cursor = if matches!(self.shape, CursorShape::Hollow) {
-            outline(bounds, self.color)
-        } else {
-            fill(bounds, self.color)
+        let cursor = match self.shape {
+            CursorShape::Bar => quad(bounds, 2., self.color, 0., transparent_black()),
+            CursorShape::Block => quad(bounds, 2., self.color, 0., transparent_black()),
+            CursorShape::Underline => quad(bounds, 1., self.color, 0., transparent_black()),
+            CursorShape::Hollow => quad(bounds, 2., transparent_black(), 1., self.color),
         };
 
         if let Some(name) = &mut self.cursor_name {
